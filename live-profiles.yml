@@ -1,0 +1,65 @@
+spring:
+  application:
+     name: live-profiles  # Service registers under this name
+  freemarker:
+    enabled: false           # Ignore Eureka dashboard FreeMarker templates
+  data:
+    mongodb:
+      uri: mongodb://localhost:27017/live-profiles
+  cloud:
+    stream:
+      kafka:
+        binder:
+          brokers: localhost:9092
+      bindings:
+        users-in:
+          destination: users
+          contentType: application/json
+
+# HTTP Server
+server:
+  port: 5555   # HTTP (Tomcat) port
+
+# Discovery Server Access
+#  1. DEV ONLY: Reduce the lease renewal interval to speed up registration
+#  2. Define URL of registration server (defaultZone)
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://localhost:1111/eureka/
+  instance:
+    leaseRenewalIntervalInSeconds: 5   # DO NOT DO THIS IN PRODUCTION
+
+logging:
+  level:
+    ROOT: INFO
+    org.springframework.web: INFO
+    org.springframework.security: TRACE
+
+---
+
+spring:
+  profiles: docker
+  data:
+      mongodb:
+        uri: mongodb://mongodb:27017/live-profiles
+
+  cloud:
+    stream:
+      kafka:
+        binder:
+          brokers: kafka:9092
+      bindings:
+        users-in:
+          destination: users
+          contentType: application/json
+
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://live-discovery:1111/eureka/
+  instance:
+  # Register our microservices to Eureka using hostnames in a Docker environment will not work, they will all get
+  # one and the same hostname. Instead we configure them to use its IP address during registration with Eureka.
+    preferIpAddress: true
+    leaseRenewalIntervalInSeconds: 5   # DO NOT DO THIS IN PRODUCTION

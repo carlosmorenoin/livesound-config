@@ -1,0 +1,62 @@
+spring:
+  application:
+     name: live-auth  # Service registers under this name
+
+server:
+  port: 9991
+  servlet:
+    contextPath: /auth
+
+security:
+  user:
+    password: password
+  sessions: if-required
+
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://localhost:1111/eureka/
+  instance:
+    leaseRenewalIntervalInSeconds: 5   # DO NOT DO THIS IN PRODUCTION
+
+logging:
+  level:
+    ROOT: INFO
+    org.springframework.web: INFO
+    org.springframework.security: DEBUG
+
+live:
+  security:
+    oauth2:
+      keystore:
+        path: jwt.jks
+        keypair: jwt
+      client:
+        id: livesound-app
+        secret: $2a$10$gacdvfLbL1FM4dGMJA6Gyenh6Vhiu5CLcsAEr5yKlW78ECn4EW7k2
+  database:
+    host: 127.0.0.1:27017
+    name: live-users
+    collection: user
+
+---
+
+spring:
+  profiles: docker
+# Datasource and JPA configuration to be used for storing the OAuth authorization details
+# and token store
+live:
+  database:
+    host: mongodb:27017
+    name: live-users
+    collection: user
+
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://live-discovery:1111/eureka/
+  instance:
+  # Register our microservices to Eureka using hostnames in a Docker environment will not work, they will all get
+  # one and the same hostname. Instead we configure them to use its IP address during registration with Eureka.
+    preferIpAddress: true
+    leaseRenewalIntervalInSeconds: 5   # DO NOT DO THIS IN PRODUCTION
